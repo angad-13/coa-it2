@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE 754 Double Precision Converter</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background: white;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        p {
+            font-size: 16px;
+        }
+
+        span {
+            font-weight: bold;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>IEEE 754 Double Precision Converter</h2>
+        
+        <input type="number" id="decimalInput" placeholder="Enter a decimal number">
+        <button onclick="convertToIEEE()">Convert</button>
+
+        <div class="result">
+            <p><strong>Sign:</strong> <span id="sign"></span></p>
+            <p><strong>Exponent:</strong> <span id="exponent"></span></p>
+            <p><strong>Mantissa:</strong> <span id="mantissa"></span></p>
+            <p><strong>64-bit IEEE 754 Representation:</strong></p>
+            <p id="ieeeBinary"></p>
+            <p><strong>Hexadecimal:</strong> <span id="hexadecimal"></span></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        function convertToIEEE() {
+            let decimal = parseFloat(document.getElementById("decimalInput").value);
+            if (isNaN(decimal)) {
+                alert("Please enter a valid decimal number!");
+                return;
+            }
+
+            let sign = (decimal < 0) ? 1 : 0;
+            decimal = Math.abs(decimal);
+
+            // Convert to binary
+            let integerPart = Math.floor(decimal).toString(2);
+            let fractionPart = "";
+            let frac = decimal - Math.floor(decimal);
+
+            while (fractionPart.length < 52 && frac !== 0) {
+                frac *= 2;
+                if (frac >= 1) {
+                    fractionPart += "1";
+                    frac -= 1;
+                } else {
+                    fractionPart += "0";
+                }
+            }
+
+            let binary = integerPart + "." + fractionPart;
+            
+            // Normalize the binary
+            let exponent = integerPart.length - 1;
+            let normalizedBinary = "1." + binary.slice(1).replace(".", "");
+            
+            // Calculate IEEE 754 exponent
+            let ieeeExponent = exponent + 1023;
+            let exponentBinary = ieeeExponent.toString(2).padStart(11, "0");
+            
+            // Extract Mantissa (52 bits)
+            let mantissa = normalizedBinary.slice(2, 54).padEnd(52, "0");
+
+            // Combine IEEE 754 parts
+            let ieeeBinary = sign + " " + exponentBinary + " " + mantissa;
+
+            // Convert to Hexadecimal
+            let ieeeHex = parseInt(ieeeBinary.replace(/ /g, ""), 2).toString(16).toUpperCase().padStart(16, "0");
+
+            // Update UI
+            document.getElementById("sign").innerText = sign;
+            document.getElementById("exponent").innerText = exponentBinary;
+            document.getElementById("mantissa").innerText = mantissa;
+            document.getElementById("ieeeBinary").innerText = ieeeBinary;
+            document.getElementById("hexadecimal").innerText = ieeeHex;
+
+            // GSAP Animation
+            gsap.from(".result", { opacity: 0, y: 20, duration: 0.5 });
+        }
+    </script>
+
+</body>
+</html>
